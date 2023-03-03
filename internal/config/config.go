@@ -1,34 +1,27 @@
 package config
 
 import (
-	"os"
-	"runtask/internal/logs"
-
-	"github.com/cristalhq/aconfig"
+	"github.com/caarlos0/env/v7"
 	"go.uber.org/zap"
 )
 
-// Cental configuration for the application
+// All app configuration is here
 type Config struct {
-	ListenPort int `default:"8080" usage:"Listen port for the API"`
-	Auth       struct {
-		Token string `usage:"Strong password for access control"`
-	}
+	// Listen port for the web server
+	Port int `env:"PORT" envDefault:"8080"`
+	// Host for the web server
+	Host string `env:"HOST" envDefault:"0.0.0.0"`
+	// PostgreSQL connection string
+	PostgresConnection string `env:"PG_CONNECTION" envDefault:"host=localhost user=runtask password=runtask dbname=runtask port=5432 sslmode=prefer"`
 }
 
-// Generate a configuration from envirtonment and flags
-func GenerateConfig() Config {
-	var config Config
+// Get the app configuration from the environment
+func New(log *zap.Logger) Config {
+	cfg := Config{}
 
-	loader := aconfig.LoaderFor(&config, aconfig.Config{
-		EnvPrefix: "RUNTASK",
-		Files:     []string{"./config.yml", "/etc/runtask/config.yml"},
-	})
-
-	if err := loader.Load(); err != nil {
-		logs.Logger.Error("Failed to generate config", zap.Error(err))
-		os.Exit(1)
+	if err := env.Parse(&cfg); err != nil {
+		log.Fatal("Failed to generate config", zap.Error(err))
 	}
 
-	return config
+	return cfg
 }

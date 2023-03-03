@@ -6,9 +6,7 @@ import (
 	"go.uber.org/zap"
 )
 
-var Logger = createLogger()
-
-func createLogger() *zap.Logger {
+func NewLogger() *zap.Logger {
 	logger, err := zap.NewProduction()
 
 	if err != nil {
